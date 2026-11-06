@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Centrum Gier - Hub</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#0f1115,#1a1d24);color:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh;margin:0;padding:20px;box-sizing:border-box;text-align:center;user-select:none;touch-action:manipulation}
+h1.main-title{margin-bottom:30px;font-size:32px;text-shadow:2px 2px 4px rgba(0,0,0,.6)}
+.hub-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;width:100%;max-width:1000px}
+.game-tile{background:#151922;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 10px 20px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.05)}
+.game-tile:hover{transform:translateY(-5px);box-shadow:0 15px 30px rgba(0,0,0,.5)}
+.tile-image{height:140px;display:flex;align-items:center;justify-content:center;font-size:60px}
+.tile-bar{height:5px}
+.tile-clicker .tile-image{background:linear-gradient(135deg,#ffe2e2,#ffb3b3)}.tile-clicker .tile-bar{background:#2ecc71}.tile-clicker .tile-title{color:#2ecc71}
+.tile-fortnite .tile-image{background:linear-gradient(135deg,#e3f2fd,#90caf9)}.tile-fortnite .tile-bar{background:#f1c40f}.tile-fortnite .tile-title{color:#f1c40f}
+.tile-minecraft .tile-image{background:linear-gradient(135deg,#e8f5e9,#a5d6a7)}.tile-minecraft .tile-bar{background:#3498db}.tile-minecraft .tile-title{color:#3498db}
+.tile-roblox .tile-image{background:linear-gradient(135deg,#ffebee,#ffcdd2)}.tile-roblox .tile-bar{background:#2ecc71}.tile-roblox .tile-title{color:#2ecc71}
+.tile-info{padding:20px;text-align:left;flex-grow:1}
+.tile-title{font-size:20px;font-weight:bold;margin:0 0 10px;line-height:1.3}
+.tile-arrow{font-size:20px;margin-top:15px;transform:rotate(-45deg);display:inline-block}
+.game-screen{display:none;width:100%;max-width:600px;padding:10px;box-sizing:border-box;animation:fadeIn .4s ease}
+.game-screen.active{display:flex;flex-direction:column;align-items:center}
+@keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.back-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:bold;margin-bottom:20px;align-self:flex-start}
+.back-btn:hover{background:rgba(255,255,255,.2)}
+.game-card{width:100%;border-radius:20px;padding:25px;box-sizing:border-box;box-shadow:0 10px 30px rgba(0,0,0,.5);position:relative}
+.bg-clicker{background:linear-gradient(135deg,#ff416c,#ff4b2b)}
+.bg-fortnite{background:linear-gradient(135deg,#007bff,#5bc0de)}
+.bg-minecraft{background:linear-gradient(135deg,#5b8731,#3c5e21);text-shadow:1px 1px 2px #000}
+.bg-roblox{background:linear-gradient(135deg,#e11d48,#9f1239)}
+.score-container{font-size:24px;margin-bottom:20px;background:rgba(0,0,0,.4);padding:15px 30px;border-radius:10px}
+#smiley{width:160px;height:160px;background:#ffd700;border-radius:50%;border:8px solid #ffa500;cursor:pointer;box-shadow:0 10px 25px rgba(0,0,0,.4);transition:transform .05s;display:flex;align-items:center;justify-content:center;font-size:75px;margin:0 auto;-webkit-tap-highlight-color:transparent}
+#smiley:active{transform:scale(.9)}
+.particle{position:fixed;font-size:24px;pointer-events:none;animation:fly .6s ease-out forwards;z-index:50}
+@keyframes fly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(1.5) rotate(var(--r));opacity:0}}
+.shop{margin-top:25px;background:rgba(0,0,0,.3);padding:15px;border-radius:15px}
+.upgrade-btn{background:#27ae60;color:#fff;border:none;padding:12px 20px;font-size:14px;border-radius:8px;cursor:pointer;width:100%;margin-bottom:10px;font-weight:bold}
+.upgrade-btn:disabled{background:#7f8c8d;cursor:not-allowed}
+.fn-btn{background:#f0ad4e;color:#000;border:none;padding:15px;font-weight:bold;font-size:18px;border-radius:10px;cursor:pointer;width:100%}
+#drop-result,#rbx-result{font-size:22px;font-weight:bold;margin-top:20px;background:rgba(0,0,0,.4);padding:15px;border-radius:10px}
+.mc-quiz-box{background:rgba(0,0,0,.5);padding:15px;border-radius:10px;margin-top:15px;text-align:left}
+.ans-btn{background:#4a4a4a;color:#fff;border:2px solid #222;width:100%;text-align:left;padding:10px;margin:5px 0;border-radius:5px;cursor:pointer;font-size:15px}
+.ans-btn:hover{background:#666}
+.ans-btn.ok{background:#2e7d32}.ans-btn.bad{background:#c62828}
+.rbx-box{background:rgba(0,0,0,.4);padding:15px;border-radius:10px;margin-bottom:15px;text-align:left}
+.reset-btn{background:none;border:1px solid rgba(255,255,255,.4);color:rgba(255,255,255,.6);padding:5px 10px;font-size:11px;border-radius:5px;cursor:pointer;margin-top:10px}
+
+#minecraft-screen{max-width:900px}
+.mc-panel{background:#2b2b2b;border:4px solid #111;padding:20px;text-align:center}
+.mc-logo{font-size:28px;font-weight:bold;letter-spacing:2px;margin:0 0 15px;color:#7ddc4c}
+.mc-input{padding:10px;font-size:16px;width:80%;max-width:300px;border:2px solid #111;background:#1a1a1a;color:#fff;text-align:center}
+.mc-play{background:#3c8527;border:3px solid #1f4a12;color:#fff;font-size:24px;font-weight:bold;padding:15px;width:100%;cursor:pointer;margin-top:12px}
+.mc-play:hover{background:#4a9d33}
+.mc-small{background:#555;border:2px solid #111;color:#fff;padding:8px 14px;cursor:pointer;margin-top:10px}
+.bar-wrap{background:#111;height:14px;margin-top:12px}#mc-bar{background:#5dac3c;height:100%;width:0}
+#mc-cv{width:100%;height:420px;display:block;background:#87ceeb;touch-action:none;border:3px solid #111}
+.mc-ctrl{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.mc-ctrl button{background:#444;color:#fff;border:2px solid #111;padding:12px 16px;font-size:18px;cursor:pointer;touch-action:none}
+.mc-ctrl button.sel{background:#3c8527;border-color:#fff}
+#aim-arena{position:relative;height:340px;background:rgba(0,0,0,.35);border-radius:12px;margin-top:15px;overflow:hidden;cursor:crosshair;touch-action:none}
+.target{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff 0 15%,#e74c3c 16% 40%,#fff 41% 60%,#e74c3c 61%);cursor:crosshair;box-shadow:0 0 10px rgba(0,0,0,.5)}
+#car-cv{width:100%;max-width:300px;border:4px solid #111;border-radius:8px;touch-action:none}
+#topbar{width:100%;max-width:1000px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:#151922;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 16px;margin-bottom:20px;box-sizing:border-box;font-size:13px}
+.tb-logo{font-weight:bold;font-size:16px}.tb-rights{color:rgba(255,255,255,.6)}
+.tb-owner{background:#f1c40f;color:#000;border:none;border-radius:8px;padding:8px 14px;font-weight:bold;cursor:pointer}
+#announce{display:none;width:100%;max-width:1000px;background:#f1c40f;color:#000;padding:10px;border-radius:10px;margin-bottom:15px;font-weight:bold;box-sizing:border-box}
+#owner-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;padding:20px}
+.owner-box{background:#1a1d24;border:1px solid #f1c40f;border-radius:14px;padding:20px;max-width:380px;width:100%;text-align:left;max-height:90vh;overflow:auto}
+.owner-box .mc-small{display:block;width:100%}
+.mc-status{display:flex;justify-content:space-between;margin-top:8px;font-size:14px;text-shadow:none}
+.xp{position:relative;height:12px;background:#111;margin-top:6px;border:2px solid #000}#mc-xp{height:100%;background:#7ddc4c;width:0}
+.xp span{position:absolute;left:50%;top:-16px;transform:translateX(-50%);font-weight:bold;color:#7ddc4c;font-size:13px}
+.hotbar{display:flex;justify-content:center;gap:2px;margin-top:22px;background:#373737;padding:4px;border:3px solid #111}
+.slot{width:11%;max-width:48px;aspect-ratio:1;background:#8b8b8b;border:3px solid #555;position:relative;padding:0;cursor:pointer}
+.slot i{position:absolute;inset:18%}.slot b{position:absolute;right:2px;bottom:0;font-size:10px;color:#fff}
+.slot.sel{border-color:#fff;background:#a8a8a8}
+</style>
+</head>
+<body>
+<header id="topbar"><span class="tb-logo">🎮 Centrum Gier</span><span class="tb-rights">© 2026 Centrum Gier. Wszelkie prawa zastrzeżone.</span><button class="tb-owner" onclick="ownerOpen()">👑 Panel właściciela</button></header>
+<div id="announce"></div>
+<div id="owner-modal" onclick="if(event.target===this)ownerClose()"><div class="owner-box" id="owner-box"></div></div>
+
+<div id="main-hub">
+  <h1 class="main-title">Wybierz grę 🎮</h1>
+  <div class="hub-container">
+    <div class="game-tile tile-clicker" onclick="openGame('clicker-screen')"><div class="tile-image">😘</div><div class="tile-bar"></div><div class="tile-info"><p class="tile-title">Buzior<br>Klikacz</p><div class="tile-arrow">➔</div></div></div>
+    <div class="game-tile tile-fortnite" onclick="openGame('fortnite-screen')"><div class="tile-image">🎯</div><div class="tile-bar"></div><div class="tile-info"><p class="tile-title">Trener Aima<br>Fortnite</p><div class="tile-arrow">➔</div></div></div>
+    <div class="game-tile tile-minecraft" onclick="openGame('minecraft-screen')"><div class="tile-image">🧱</div><div class="tile-bar"></div><div class="tile-info"><p class="tile-title">Minecraft<br>Launcher</p><div class="tile-arrow">➔</div></div></div>
+    <div class="game-tile tile-roblox" onclick="openGame('roblox-screen')"><div class="tile-image">🏎️</div><div class="tile-bar"></div><div class="tile-info"><p class="tile-title">Gry Samochodowe<br>Roblox</p><div class="tile-arrow">➔</div></div></div>
+  </div>
+</div>
+
+<!-- CLICKER -->
+<div id="clicker-screen" class="game-screen">
+  <button class="back-btn" onclick="showHub()">◀ Powrót do menu</button>
+  <div class="game-card bg-clicker">
+    <div class="score-container">Punkty: <span id="score">0</span><br><small>+<span id="cpc">1</span> / klik · +<span id="cps">0</span> / sek</small></div>
+    <div id="smiley">😘</div>
+    <div class="shop">
+      <button class="upgrade-btn" id="buy-click" onclick="buyClick()"></button>
+      <button class="upgrade-btn" id="buy-auto" onclick="buyAuto()"></button>
+    </div>
+    <button class="reset-btn" onclick="resetClicker()">Resetuj postęp</button>
+  </div>
+</div>
+
+<!-- FORTNITE -->
+<div id="fortnite-screen" class="game-screen">
+  <button class="back-btn" onclick="showHub()">◀ Powrót do menu</button>
+  <div class="game-card bg-fortnite">
+    <h2>🎯 Trener Aima</h2>
+    <p>Klikaj cele, zanim znikną. 30 sekund!</p>
+    <button class="fn-btn" onclick="aimStart()">▶ Start</button>
+    <div id="aim-info" style="margin-top:12px;font-weight:bold">Gotowy?</div>
+    <div id="aim-arena"></div>
+  </div>
+</div>
+
+<!-- MINECRAFT -->
+<div id="minecraft-screen" class="game-screen">
+  <button class="back-btn" onclick="showHub()">◀ Powrót do menu</button>
+  <div class="game-card bg-minecraft">
+    <div id="mc-launcher" class="mc-panel">
+      <p class="mc-logo">⛏ MINECRAFT LAUNCHER</p>
+      <div id="mc-login">
+        <p>Zaloguj się, aby zagrać</p>
+        <input id="mc-nick" class="mc-input" placeholder="Twój nick" maxlength="16"><br>
+        <button class="mc-play" onclick="mcLogin()">ZALOGUJ</button>
+        <p id="mc-err" style="color:#ff8a80;font-size:13px"></p>
+      </div>
+      <div id="mc-home" style="display:none">
+        <p>Zalogowany jako <b id="mc-hello"></b></p>
+        <select class="mc-input"><option>Wersja: Latest release</option><option>Wersja: Snapshot</option></select>
+        <button class="mc-play" onclick="mcPlay()">GRAJ</button>
+        <div id="mc-load" style="display:none"><div class="bar-wrap"><div id="mc-bar"></div></div><small>Ładowanie świata…</small></div>
+        <button class="mc-small" onclick="mcLogout()">Wyloguj</button>
+      </div>
+    </div>
+    <div id="mc-game" style="display:none">
+      <canvas id="mc-cv"></canvas>
+      <div id="mc-hud" style="font-size:12px;margin-top:6px">Klik = kop · PPM = postaw · WASD + spacja · przeciągnij = rozglądanie</div>
+      <div class="mc-ctrl">
+        <button onpointerdown="mcBtn('f',1)" onpointerup="mcBtn('f',0)" onpointerleave="mcBtn('f',0)">▲</button>
+        <button onpointerdown="mcBtn('f',-1)" onpointerup="mcBtn('f',0)" onpointerleave="mcBtn('f',0)">▼</button>
+        <button onpointerdown="mcBtn('s',-1)" onpointerup="mcBtn('s',0)" onpointerleave="mcBtn('s',0)">◀</button>
+        <button onpointerdown="mcBtn('s',1)" onpointerup="mcBtn('s',0)" onpointerleave="mcBtn('s',0)">▶</button>
+        <button onpointerdown="mcBtn('j',1)" onpointerup="mcBtn('j',0)">⤒</button>
+        <button onclick="mcAct(0)">⛏</button><button onclick="mcAct(1)">🧱</button>
+      </div>
+      <div class="mc-status"><div id="mc-hearts"></div><div>🍗🍗🍗🍗🍗🍗🍗🍗🍗🍗</div></div>
+      <div class="xp"><div id="mc-xp"></div><span id="mc-lvl">0</span></div>
+      <div class="hotbar" id="mc-bar-sel">
+        <button class="slot sel" onclick="mcSel(0)"><i style="background:#5dac3c"></i><b>1</b></button><button class="slot" onclick="mcSel(1)"><i style="background:#8b5a2b"></i><b>2</b></button><button class="slot" onclick="mcSel(2)"><i style="background:#888"></i><b>3</b></button><button class="slot" onclick="mcSel(3)"><i style="background:#a0722f"></i><b>4</b></button><button class="slot" onclick="mcSel(4)"><i style="background:#e0d08a"></i><b>5</b></button><button class="slot" onclick="mcSel(5)"><i style="background:#b5523b"></i><b>6</b></button><button class="slot" onclick="mcSel(6)"><i style="background:#fff"></i><b>7</b></button><button class="slot" onclick="mcSel(7)"><i style="background:#ff6a00"></i><b>8</b></button><button class="slot" onclick="mcSel(8)"><i style="background:#1b1027"></i><b>9</b></button>
+      </div>
+      <div id="mc-selname" style="font-size:13px;margin-top:4px"></div>
+      <div style="display:none">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROBLOX -->
+<div id="roblox-screen" class="game-screen">
+  <button class="back-btn" onclick="showHub()">◀ Powrót do menu</button>
+  <div class="game-card bg-roblox">
+    <h2>🏎️ Wyścig</h2>
+    <p>Unikaj aut! Strzałki ← → lub przyciski.</p>
+    <canvas id="car-cv" width="300" height="420"></canvas>
+    <div class="mc-ctrl">
+      <button onclick="carMove(-1)">◀</button><button onclick="carStart()">▶ Start</button><button onclick="carMove(1)">▶</button>
+    </div>
+    <div class="rbx-box" style="margin-top:20px"><b>Nie wiesz w co zagrać na Robloxie?</b></div>
+    <button class="fn-btn" onclick="rollRoblox()">Losuj grę samochodową</button>
+    <div id="rbx-result">Kliknij przycisk 👆</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ---------- NAWIGACJA ----------
+function openGame(id){
+  document.getElementById('main-hub').style.display='none';
+  document.querySelectorAll('.game-screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+  if(id==='minecraft-screen') mcStart();
+  window.scrollTo(0,0);
+}
+function showHub(){
+  document.querySelectorAll('.game-screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById('main-hub').style.display='block';
+}
+
+// ---------- CLICKER ----------
+var score=0, cpc=1, cps=0;
+try{
+  var saved=JSON.parse(localStorage.getItem('clicker')||'null');
+  if(saved){score=saved.score||0;cpc=saved.cpc||1;cps=saved.cps||0;}
+}catch(e){}
+function saveClicker(){try{localStorage.setItem('clicker',JSON.stringify({score:score,cpc:cpc,cps:cps}))}catch(e){}}
+function clickCost(){return 50*cpc}
+function autoCost(){return 100*(cps+1)}
+function updateClicker(){
+  document.getElementById('score').textContent=Math.floor(score);
+  document.getElementById('cpc').textContent=cpc;
+  document.getElementById('cps').textContent=cps;
+  var b1=document.getElementById('buy-click'), b2=document.getElementById('buy-auto');
+  b1.textContent='💪 Mocniejszy klik (+1) — '+clickCost();
+  b2.textContent='🤖 Auto-klikacz (+1/sek) — '+autoCost();
+  b1.disabled=score<clickCost(); b2.disabled=score<autoCost();
+}
+function buyClick(){if(score>=clickCost()){score-=clickCost();cpc++;updateClicker();saveClicker();}}
+function buyAuto(){if(score>=autoCost()){score-=autoCost();cps++;updateClicker();saveClicker();}}
+function resetClicker(){if(confirm('Na pewno zresetować?')){score=0;cpc=1;cps=0;updateClicker();saveClicker();}}
+document.getElementById('smiley').addEventListener('pointerdown',function(e){
+  score+=cpc; updateClicker(); saveClicker();
+  var p=document.createElement('div');
+  p.className='particle'; p.textContent=['💋','😘','❤️','✨'][Math.floor(Math.random()*4)];
+  p.style.left=e.clientX+'px'; p.style.top=e.clientY+'px';
+  p.style.setProperty('--x',(Math.random()*120-60)+'px');
+  p.style.setProperty('--y',(-40-Math.random()*80)+'px');
+  p.style.setProperty('--r',(Math.random()*90-45)+'deg');
+  document.body.appendChild(p);
+  setTimeout(function(){p.remove()},600);
+});
+setInterval(function(){if(cps>0){score+=cps;updateClicker();saveClicker();}},1000);
+updateClicker();
+
+// ---------- FORTNITE: TRENER AIMA ----------
+var aim={on:false,score:0,miss:0,t:30,timer:null,spawn:null}, aimBest=0;
+try{aimBest=+localStorage.getItem('aimBest')||0}catch(e){}
+function aimInfo(){document.getElementById('aim-info').textContent='Trafienia: '+aim.score+' · Pudła: '+aim.miss+' · Czas: '+aim.t+'s · Rekord: '+aimBest;}
+function aimStop(){clearInterval(aim.timer);clearTimeout(aim.spawn);aim.on=false;}
+function aimStart(){
+  aimStop();aim={on:true,score:0,miss:0,t:30,timer:null,spawn:null};
+  document.getElementById('aim-arena').innerHTML='';aimInfo();
+  aim.timer=setInterval(function(){aim.t--;aimInfo();if(aim.t<=0)aimEnd();},1000);
+  aimSpawn();
+}
+function aimEnd(){
+  aimStop();document.getElementById('aim-arena').innerHTML='';
+  var tot=aim.score+aim.miss, acc=tot?Math.round(aim.score/tot*100):0;
+  if(aim.score>aimBest){aimBest=aim.score;try{localStorage.setItem('aimBest',aimBest)}catch(e){}}
+  document.getElementById('aim-info').textContent='Koniec! Trafienia: '+aim.score+' · Celność: '+acc+'% · Rekord: '+aimBest;
+}
+function aimSpawn(){
+  if(!aim.on)return;
+  var a=document.getElementById('aim-arena'),sz=36+Math.random()*24,d=document.createElement('div');
+  d.className='target';d.style.width=d.style.height=sz+'px';
+  d.style.left=Math.random()*(a.clientWidth-sz)+'px';d.style.top=Math.random()*(a.clientHeight-sz)+'px';
+  d.addEventListener('pointerdown',function(e){e.stopPropagation();if(!aim.on)return;aim.score++;d.remove();aimInfo();});
+  a.appendChild(d);
+  setTimeout(function(){if(d.parentNode)d.remove();},1100);
+  aim.spawn=setTimeout(aimSpawn,450);
+}
+document.getElementById('aim-arena').addEventListener('pointerdown',function(){if(aim.on){aim.miss++;aimInfo();}});
+
+// ---------- MINECRAFT ----------
+var mcUser=null;try{mcUser=localStorage.getItem('mcUser')}catch(e){}
+var mcMv={f:0,s:0,j:0}, mc3={};
+var MC_NAMES=['Trawa','Ziemia','Kamień','Drewno','Piasek','Cegła','Śnieg','Lawa','Obsydian'], mcHP=20, mcXp=0;
+function mcHud(){
+  var h='';for(var i=0;i<10;i++){h+=mcHP>=i*2+2?'❤️':(mcHP===i*2+1?'💔':'🖤');}
+  var e=document.getElementById('mc-hearts');if(e)e.textContent=h;
+  document.getElementById('mc-xp').style.width=(mcXp%10)*10+'%';
+  document.getElementById('mc-lvl').textContent=Math.floor(mcXp/10);
+}
+function mcBtn(k,v){mcMv[k]=v;}
+function mcStart(){mcRenderLauncher();}
+function mcRenderLauncher(){
+  mcStop();var ok=!!mcUser;
+  document.getElementById('mc-login').style.display=ok?'none':'block';
+  document.getElementById('mc-home').style.display=ok?'block':'none';
+  document.getElementById('mc-game').style.display='none';
+  document.getElementById('mc-launcher').style.display='block';
+  if(ok)document.getElementById('mc-hello').textContent=mcUser;
+}
+function mcLogin(){
+  var n=document.getElementById('mc-nick').value.trim();
+  if(!/^[A-Za-z0-9_]{3,16}$/.test(n)){document.getElementById('mc-err').textContent='Nick: 3–16 znaków (litery, cyfry, _)';return;}
+  mcUser=n;try{localStorage.setItem('mcUser',n)}catch(e){}mcRenderLauncher();
+}
+function mcLogout(){mcUser=null;try{localStorage.removeItem('mcUser')}catch(e){}mcRenderLauncher();}
+function mcPlay(){
+  var bar=document.getElementById('mc-bar'),w=0;
+  document.getElementById('mc-load').style.display='block';
+  var t=setInterval(function(){
+    w+=8+Math.random()*10;bar.style.width=Math.min(w,100)+'%';
+    if(w>=100){clearInterval(t);document.getElementById('mc-load').style.display='none';bar.style.width='0';
+      document.getElementById('mc-launcher').style.display='none';document.getElementById('mc-game').style.display='block';mcInit();}
+  },150);
+}
+function mcStop(){if(mc3.run){mc3.run=false;cancelAnimationFrame(mc3.raf);}}
+function mcAct(m){if(mc3.act)mc3.act(m);}
+function mcSel(i){mc3.sel=i;document.querySelectorAll('#mc-bar-sel button').forEach(function(x,j){x.classList.toggle('sel',j===i)});var n=document.getElementById('mc-selname');if(n)n.textContent=MC_NAMES[i];}
+function mcInit(){
+  if(mc3.resume){mc3.resume();return;}
+  var hud=document.getElementById('mc-hud');
+  if(typeof THREE==='undefined'){hud.textContent='Nie udało się załadować silnika 3D (sprawdź internet).';return;}
+  var N=24,cv=document.getElementById('mc-cv'),W=cv.clientWidth||600,H=420;
+  var r=new THREE.WebGLRenderer({canvas:cv});r.setSize(W,H,false);
+  var sc=new THREE.Scene();sc.background=new THREE.Color(0x87ceeb);
+  var cam=new THREE.PerspectiveCamera(70,W/H,.1,100);cam.rotation.order='YXZ';
+  sc.add(new THREE.AmbientLight(0xffffff,.75));
+  var dl=new THREE.DirectionalLight(0xffffff,.6);dl.position.set(5,10,3);sc.add(dl);
+  var geo=new THREE.BoxGeometry(1,1,1);
+  var mats=[0x5dac3c,0x8b5a2b,0x888888,0xa0722f,0xe0d08a,0xb5523b,0xffffff,0xff6a00,0x1b1027].map(function(c){return new THREE.MeshLambertMaterial({color:c})});
+  var blocks={},meshes=[];
+  function add(x,y,z,t){var k=x+','+y+','+z;if(blocks[k])return;var m=new THREE.Mesh(geo,mats[t]);m.position.set(x+.5,y+.5,z+.5);sc.add(m);blocks[k]=m;meshes.push(m);}
+  function del(m){var k=Math.floor(m.position.x)+','+Math.floor(m.position.y)+','+Math.floor(m.position.z);sc.remove(m);delete blocks[k];meshes.splice(meshes.indexOf(m),1);}
+  for(var x=0;x<N;x++)for(var z=0;z<N;z++){
+    var h=Math.max(1,2+Math.round(Math.sin(x*.45)+Math.cos(z*.35)));
+    for(var y=0;y<h;y++)add(x,y,z,y===h-1?0:(y>=h-3?1:2));
+  }
+  function top(px,pz){
+    var ix=Math.floor(px),iz=Math.floor(pz);
+    if(ix<0||iz<0||ix>=N||iz>=N)return 99;
+    for(var y=15;y>=0;y--)if(blocks[ix+','+y+','+iz])return y+1;
+    return 0;
+  }
+  var p={x:N/2,z:N/2,y:0,vy:0},yaw=0,pitch=0,keys={},grounded=false,last=0;
+  p.y=top(p.x,p.z);mc3.sel=0;mcHud();mcSel(0);
+  var ray=new THREE.Raycaster();
+  mc3.act=function(m){
+    ray.setFromCamera({x:0,y:0},cam);
+    var hit=ray.intersectObjects(meshes)[0];
+    if(!hit||hit.distance>6)return;
+    if(m===0){del(hit.object);mcXp++;mcHud();return;}
+    var q=hit.object.position.clone().add(hit.face.normal),bx=Math.floor(q.x),by=Math.floor(q.y),bz=Math.floor(q.z);
+    if(bx<0||bz<0||bx>=N||bz>=N||by<0||by>14)return;
+    if(Math.abs(bx+.5-p.x)<.8&&Math.abs(bz+.5-p.z)<.8&&by+1>p.y&&by<p.y+1.8)return;
+    add(bx,by,bz,mc3.sel);
+  };
+  var down=false,moved=false,px0=0,py0=0,tot=0;
+  cv.addEventListener('pointerdown',function(e){if(e.button===2)return;down=true;moved=false;tot=0;px0=e.clientX;py0=e.clientY;});
+  cv.addEventListener('pointermove',function(e){
+    if(!down)return;var dx=e.clientX-px0,dy=e.clientY-py0;px0=e.clientX;py0=e.clientY;
+    tot+=Math.abs(dx)+Math.abs(dy);if(tot>6)moved=true;
+    yaw-=dx*.005;pitch=Math.max(-1.4,Math.min(1.4,pitch-dy*.005));
+  });
+  window.addEventListener('pointerup',function(){if(down&&!moved&&mc3.run)mc3.act(0);down=false;});
+  cv.addEventListener('contextmenu',function(e){e.preventDefault();mc3.act(1);});
+  document.addEventListener('keydown',function(e){if(!mc3.run)return;var k=e.key.toLowerCase();keys[k]=true;if(k>='1'&&k<='9'&&e.target.tagName!=='INPUT')mcSel(+k-1);if(k===' ')e.preventDefault();});
+  document.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});
+  function loop(t){
+    if(!mc3.run)return;mc3.raf=requestAnimationFrame(loop);
+    var dt=Math.min((t-last)/1000,.05);last=t;
+    var f=((keys.w||mcMv.f>0)?1:0)-((keys.s||mcMv.f<0)?1:0),sd=((keys.d||mcMv.s>0)?1:0)-((keys.a||mcMv.s<0)?1:0);
+    var dx=(-Math.sin(yaw)*f+Math.cos(yaw)*sd)*4.3*dt,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*sd)*4.3*dt;
+    if(top(p.x+dx,p.z)-p.y<=.6)p.x+=dx;
+    if(top(p.x,p.z+dz)-p.y<=.6)p.z+=dz;
+    if(grounded&&(keys[' ']||mcMv.j)){p.vy=7;grounded=false;}
+    p.vy-=20*dt;p.y+=p.vy*dt;
+    var g=top(p.x,p.z);
+    if(p.y<=g){if(!grounded&&p.vy<-11){mcHP-=Math.floor(-p.vy-11);mcHud();}p.y=g;p.vy=0;grounded=true;}else grounded=false;
+    mc3.reg=(mc3.reg||0)+dt;if(mc3.reg>4){mc3.reg=0;if(mcHP<20){mcHP++;mcHud();}}
+    if(mcHP<=0){mcHP=20;p.x=N/2;p.z=N/2;p.y=top(p.x,p.z);p.vy=0;mcHud();}
+    cam.position.set(p.x,p.y+1.6,p.z);cam.rotation.set(pitch,yaw,0);
+    r.render(sc,cam);
+  }
+  mc3.resume=function(){mc3.run=true;last=performance.now();mc3.raf=requestAnimationFrame(loop);};
+  mc3.resume();
+}
+
+// ---------- ROBLOX: GRA SAMOCHODOWA ----------
+var car={on:false,lane:1,obs:[],score:0,raf:null,last:0,spawnT:0,speed:200};
+function carStop(){car.on=false;cancelAnimationFrame(car.raf);}
+function carStart(){carStop();car.on=true;car.lane=1;car.obs=[];car.score=0;car.speed=200;car.spawnT=0;car.last=performance.now();car.raf=requestAnimationFrame(carLoop);}
+function carMove(d){car.lane=Math.max(0,Math.min(2,car.lane+d));}
+function carLoop(t){
+  if(!car.on)return;
+  var dt=Math.min((t-car.last)/1000,.05);car.last=t;
+  var c=document.getElementById('car-cv'),x=c.getContext('2d'),W=c.width,H=c.height,L=W/3;
+  car.spawnT-=dt;
+  if(car.spawnT<=0){car.obs.push({l:Math.floor(Math.random()*3),y:-50,e:['🚗','🚙','🚧','🚚'][Math.floor(Math.random()*4)]});car.spawnT=Math.max(.35,.9-car.score/400);}
+  car.speed+=dt*6;car.score+=dt*10;
+  x.fillStyle='#333';x.fillRect(0,0,W,H);
+  x.strokeStyle='#fff';x.lineWidth=3;x.setLineDash([20,20]);x.lineDashOffset=-(car.score*8)%40;
+  [L,2*L].forEach(function(lx){x.beginPath();x.moveTo(lx,0);x.lineTo(lx,H);x.stroke();});
+  x.font='44px serif';x.textAlign='center';x.textBaseline='middle';
+  var dead=false;
+  car.obs.forEach(function(o){
+    o.y+=car.speed*dt;x.fillText(o.e,o.l*L+L/2,o.y);
+    if(o.l===car.lane&&o.y>H-110&&o.y<H-30)dead=true;
+  });
+  car.obs=car.obs.filter(function(o){return o.y<H+50;});
+  x.fillText('🏎️',car.lane*L+L/2,H-70);
+  x.font='bold 18px sans-serif';x.fillStyle='#fff';x.textAlign='left';x.fillText('Wynik: '+Math.floor(car.score),10,20);
+  if(dead){car.on=false;x.textAlign='center';x.font='bold 28px sans-serif';x.fillText('💥 Koniec! '+Math.floor(car.score),W/2,H/2);return;}
+  car.raf=requestAnimationFrame(carLoop);
+}
+document.addEventListener('keydown',function(e){
+  if(!document.getElementById('roblox-screen').classList.contains('active'))return;
+  if(e.key==='ArrowLeft'||e.key==='a'){carMove(-1);e.preventDefault();}
+  if(e.key==='ArrowRight'||e.key==='d'){carMove(1);e.preventDefault();}
+});
+var rbx=['🏎️ Driving Empire','🚗 Car Dealership Tycoon','🛣️ Vehicle Legends','🚓 Jailbreak (pościgi)','🚙 A Dusty Trip','🌃 Midnight Racing: Tokyo','🏘️ Greenville','🚕 Brookhaven (jazda po mieście)'];
+function rollRoblox(){
+  var r=document.getElementById('rbx-result'),n=0;
+  var t=setInterval(function(){r.textContent=rbx[Math.floor(Math.random()*rbx.length)];if(++n>10)clearInterval(t);},80);
+}
+
+// ---------- PANEL WŁAŚCICIELA ----------
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+function oHash(s){var x=5381;for(var i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return ''+x;}
+var ownerOK=false;
+function showAnnounce(){var a=lsGet('announce'),el=document.getElementById('announce');el.textContent=a||'';el.style.display=a?'block':'none';}
+function ownerOpen(){document.getElementById('owner-modal').style.display='flex';ownerRender();}
+function ownerClose(){document.getElementById('owner-modal').style.display='none';ownerOK=false;}
+function ownerRender(msg){
+  var pin=lsGet('ownerPin'),h='<h3 style="margin:0 0 10px;color:#f1c40f">👑 Panel właściciela</h3>';
+  if(!pin){h+='<p>Ustaw PIN właściciela (min. 4 znaki):</p><input id="o-pin" type="password" class="mc-input" style="width:100%"><button class="mc-play" onclick="ownerSetPin()">Zapisz PIN</button>';}
+  else if(!ownerOK){h+='<p>Wpisz PIN:</p><input id="o-pin" type="password" class="mc-input" style="width:100%"><button class="mc-play" onclick="ownerLogin()">Odblokuj</button>';}
+  else{h+='<p>Gracz Minecraft: <b>'+(mcUser?mcUser.replace(/[^A-Za-z0-9_]/g,''):'brak')+'</b><br>Punkty klikacza: <b>'+Math.floor(score)+'</b><br>Rekord aima: <b>'+aimBest+'</b></p>'
+   +'<input id="o-ann" class="mc-input" style="width:100%" maxlength="120" placeholder="Ogłoszenie na stronie głównej"><button class="mc-small" onclick="ownerAnn()">📢 Zapisz ogłoszenie</button>'
+   +'<button class="mc-small" onclick="ownerResetClicker()">♻️ Resetuj klikacz</button><button class="mc-small" onclick="ownerResetAim()">♻️ Resetuj rekord aima</button><button class="mc-small" onclick="ownerLogoutMc()">🚪 Wyloguj gracza Minecraft</button><button class="mc-small" onclick="ownerChangePin()">🔑 Zmień PIN</button>';}
+  if(msg)h+='<p style="color:#ffcc80;font-size:13px">'+msg+'</p>';
+  h+='<button class="mc-small" onclick="ownerClose()">Zamknij</button>';
+  document.getElementById('owner-box').innerHTML=h;
+  var a=document.getElementById('o-ann');if(a)a.value=lsGet('announce')||'';
+}
+function ownerSetPin(){var v=document.getElementById('o-pin').value;if(v.length<4){ownerRender('PIN musi mieć min. 4 znaki.');return;}lsSet('ownerPin',oHash(v));ownerOK=true;ownerRender('PIN zapisany.');}
+function ownerLogin(){var v=document.getElementById('o-pin').value;if(oHash(v)===lsGet('ownerPin')){ownerOK=true;ownerRender();}else ownerRender('Zły PIN.');}
+function ownerAnn(){lsSet('announce',document.getElementById('o-ann').value.trim().slice(0,120));showAnnounce();ownerRender('Zapisano ogłoszenie.');}
+function ownerResetClicker(){score=0;cpc=1;cps=0;updateClicker();saveClicker();ownerRender('Klikacz zresetowany.');}
+function ownerResetAim(){aimBest=0;lsSet('aimBest','0');ownerRender('Rekord zresetowany.');}
+function ownerLogoutMc(){mcUser=null;lsDel('mcUser');ownerRender('Gracz wylogowany.');}
+function ownerChangePin(){lsDel('ownerPin');ownerOK=false;ownerRender();}
+showAnnounce();
+
+// ---------- SPRZĄTANIE PRZY WYJŚCIU ----------
+var _showHub=showHub;
+showHub=function(){mcStop();aimStop();carStop();_showHub();};
+</script>
+</body>
+</html>
